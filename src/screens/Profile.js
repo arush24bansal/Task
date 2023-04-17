@@ -1,8 +1,10 @@
 import {View, Text, Pressable, Image} from 'react-native';
 import React from 'react';
+import {useSelector} from 'react-redux';
 
 export default function Profile({navigation, route}) {
   const {data} = route.params;
+  const data2 = useSelector(state => state);
   console.log(JSON.stringify(data, null, 1));
   return (
     <>
@@ -16,6 +18,11 @@ export default function Profile({navigation, route}) {
             {data.name.first} {data.name.last}
           </Text>
           <Text>{data.gender}</Text>
+          <Text>
+            {data2
+              ? data2.find(el => el.login.uuid === data.login.uuid).cell
+              : null}
+          </Text>
           <Text>{data.cell}</Text>
           <Text>
             Address: {data.location.street.number} {data.location.street.name}

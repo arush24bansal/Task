@@ -8,8 +8,8 @@ import {
   View,
   Image,
 } from 'react-native';
-import Global from '../../Global';
-import axios from 'axios';
+import {useSelector, useDispatch} from 'react-redux';
+import getUsers from '../actions/fetch';
 
 const NameItem = ({navigation, data}) => {
   return (
@@ -28,46 +28,35 @@ const NameItem = ({navigation, data}) => {
 };
 
 export default function Homescreen({navigation}) {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState(null);
   const [endIndex, setEndIndex] = useState(10);
+  const data = useSelector(state => state);
+  console.log(data[0]);
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    axios
-      .get(Global.API_URL)
-      .then(response => {
-        setLoading(false);
-        setData(response.data.results);
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    dispatch(getUsers());
   }, []);
 
   return (
     <View style={{justifyContent: 'center'}}>
       <Text style={{fontWeight: 'bold'}}>Home Screen</Text>
-      <FlatList
-        data={data ? data.slice(0, endIndex) : null}
-        renderItem={({item}) => {
-          return <NameItem navigation={navigation} data={item} />;
-        }}
-        ListFooterComponent={
-          loading ? <ActivityIndicator size={'large'} /> : null
-        }
-        onEndReached={() => {
-          if (data) {
+      {data.length ? (
+        <FlatList
+          data={data.slice(0, endIndex)}
+          renderItem={({item}) => {
+            return <NameItem navigation={navigation} data={item} />;
+          }}
+          onEndReached={() => {
             setEndIndex(prev => {
-              if (data.length - 10 > prev) {
-                return prev + 10;
-              } else {
-                return data.length;
-              }
+              return prev + 10 > data.length ? data.length : prev + 10;
             });
-          }
-        }}
-        onEndReachedThreshold={0.9}
-        keyExtractor={item => item.login.uuid}
-      />
+          }}
+          onEndReachedThreshold={0.9}
+          keyExtractor={item => item.login.uuid}
+        />
+      ) : (
+        <ActivityIndicator />
+      )}
     </View>
   );
 }
